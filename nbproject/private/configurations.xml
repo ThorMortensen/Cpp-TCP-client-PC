@@ -27,8 +27,10 @@
           <runcommandpicklistitem>"${OUTPUT_PATH}"</runcommandpicklistitem>
           <runcommandpicklistitem>"${OUTPUT_PATH}" -</runcommandpicklistitem>
           <runcommandpicklistitem>"${OUTPUT_PATH}" -ip www.google.com -port 80</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}" -ip 192.168.1.39 -port 5555</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}" -ip 192.168.1.39 -port 38280</runcommandpicklistitem>
         </runcommandpicklist>
-        <runcommand>"${OUTPUT_PATH}" -ip www.google.com -port 80</runcommand>
+        <runcommand>"${OUTPUT_PATH}" -ip 192.168.1.39 -port 38280</runcommand>
         <rundir></rundir>
         <buildfirst>true</buildfirst>
         <terminal-type>0</terminal-type>

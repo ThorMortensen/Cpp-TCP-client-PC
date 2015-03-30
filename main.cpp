@@ -34,7 +34,7 @@ static const string USAGE = ("Usage: -ip xxx.xxx.xxx.xxx -port xxxx");
 
 
  //Argument expected for this program 
-ProgArg_s ipAddresForThisServer(1, "-ip", STRING, 14);
+ProgArg_s ipAddresForThisServer(1, "-ip", STRING, 12);
 ProgArg_s portNrForThisServer(2, "-port", NUMBER);
 std::vector<ProgArg_s*> args_v(2);
 
@@ -91,10 +91,13 @@ int main(int argc, char** argv) {
     sockedId = socket(hostInfoList->ai_family, hostInfoList->ai_socktype, hostInfoList->ai_protocol);
     if (sockedId == -1) std::cout << "Socket error" << strerror(errno);
 
+    //Could have used a bind call before connect to specify what local port to use 
+    
+    //Connect to the address specefied. Comes from the getaddrinfo --> into to the hostInfoList
     errorCode = connect(sockedId, hostInfoList->ai_addr, hostInfoList->ai_addrlen);
     if (errorCode == -1) std::cout << "Connect error" << strerror(errno);
 
-    char msg[] = "GET / HTTP/1.1\nhost: www.google.com\n\n";
+    char msg[] = "Hello from the PC";
 
     ssize_t bytesSent = send(sockedId, msg, strlen(msg), NO_FLAGS);
     if (bytesSent != strlen(msg))std::cout << "Send error. Bytes lost";
@@ -106,6 +109,7 @@ int main(int argc, char** argv) {
     if (bytesRx == -1)std::cout << "Rx error!" << strerror(errno) << ENDL;
 
     cout << bytesRx << " bytes recieved :" << ENDL;
+    rxBuffer[bytesRx] = 0;
     cout << rxBuffer << ENDL;
 
     freeaddrinfo(hostInfoList);
