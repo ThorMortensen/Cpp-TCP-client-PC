@@ -23,6 +23,11 @@
 #define PATH_ARG 1
 #define EXPECTED_NO_OF_ARGS 4+PATH_ARG
 #define NO_FLAGS 0
+#define CMD_AMOUNT 10
+#define RX_BUFFER_SIZE 1400
+
+
+
 
 using namespace std;
 
@@ -32,18 +37,25 @@ static const string ENDL = ("\n\r");
 //Print the usage for this program
 static const string USAGE = ("Usage: -ip xxx.xxx.xxx.xxx -port xxxx");
 
+static const string CLOSE_CONNECTION = ("KILL_C");
 
- //Argument expected for this program 
+//Argument expected for this program 
 ProgArg_s ipAddresForThisServer(1, "-ip", STRING, 12);
 ProgArg_s portNrForThisServer(2, "-port", NUMBER);
 std::vector<ProgArg_s*> args_v(2);
 
 int main(int argc, char** argv) {
 
-
-
     int32_t errorCode = 0;
     int32_t sockedId = 0;
+
+    char rxBuffer [RX_BUFFER_SIZE];
+
+    bool keepAlive = true;
+    string userInput;
+    stringstream intConveter;
+    int found = 0;
+
 
     args_v[0] = &ipAddresForThisServer;
     args_v[1] = &portNrForThisServer;
@@ -92,27 +104,36 @@ int main(int argc, char** argv) {
     if (sockedId == -1) std::cout << "Socket error" << strerror(errno);
 
     //Could have used a bind call before connect to specify what local port to use 
-    
+
     //Connect to the address specefied. Comes from the getaddrinfo --> into to the hostInfoList
     errorCode = connect(sockedId, hostInfoList->ai_addr, hostInfoList->ai_addrlen);
     if (errorCode == -1) std::cout << "Connect error" << strerror(errno);
 
-    char msg[] = "Hello from the PC";
+    freeaddrinfo(hostInfoList); //Not needed anymore.. buhu  :-(
 
-    ssize_t bytesSent = send(sockedId, msg, strlen(msg), NO_FLAGS);
-    if (bytesSent != strlen(msg))std::cout << "Send error. Bytes lost";
+    while (keepAlive) {
 
-    char rxBuffer [1000];
+        getline(cin, userInput);
 
-    ssize_t bytesRx = recv(sockedId, rxBuffer, 1000, NO_FLAGS);
-    if (bytesRx == 0) std::cout << "host connection shut down." << ENDL;
-    if (bytesRx == -1)std::cout << "Rx error!" << strerror(errno) << ENDL;
+        if (userInput == CLOSE_CONNECTION) {
+            keepAlive = false;
+        }
 
-    cout << bytesRx << " bytes recieved :" << ENDL;
-    rxBuffer[bytesRx] = 0;
-    cout << rxBuffer << ENDL;
+        ssize_t bytesSent = send(sockedId, userInput.c_str(), userInput.length(), NO_FLAGS);
+        if (bytesSent != userInput.length())std::cout << "Send error. Bytes lost";
 
-    freeaddrinfo(hostInfoList);
+        ssize_t bytesRx = recv(sockedId, rxBuffer, RX_BUFFER_SIZE, NO_FLAGS);
+        if (bytesRx == 0) {
+            std::cout << "host connection shut down." << ENDL;
+            keepAlive = false;
+        }
+        if (bytesRx == -1)std::cout << "Rx error!" << strerror(errno) << ENDL;
+
+        cout << bytesRx << " From Zybo: " << ENDL;
+        rxBuffer[bytesRx] = 0;
+        cout << rxBuffer << ENDL;
+    }
+
     close(sockedId);
 
     return 0;
